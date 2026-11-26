@@ -1,0 +1,417 @@
+/* ============================================
+   THE LOST ALGORITHM — Global Cyberpunk Styles
+   ============================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Rajdhani:wght@300;400;600;700&display=swap');
+
+/* ── Hide Streamlit chrome ── */
+#MainMenu, footer, header { visibility: hidden !important; }
+.stDeployButton { display: none !important; }
+div[data-testid="stToolbar"] { display: none !important; }
+div[data-testid="stDecoration"] { display: none !important; }
+
+/* ── Root variables ── */
+:root {
+  --bg-primary: #04040f;
+  --bg-secondary: #0a0a1a;
+  --bg-card: rgba(10, 20, 40, 0.85);
+  --accent-blue: #00d4ff;
+  --accent-cyan: #00ffea;
+  --accent-violet: #7b2fff;
+  --accent-pink: #ff2d9b;
+  --accent-green: #00ff88;
+  --text-primary: #e0e0ff;
+  --text-secondary: #8899bb;
+  --border-glow: rgba(0, 212, 255, 0.4);
+  --shadow-glow: 0 0 20px rgba(0, 212, 255, 0.3);
+}
+
+/* ── App background ── */
+.stApp {
+  background: radial-gradient(ellipse at top, #05051a 0%, #04040f 60%) !important;
+  font-family: 'Rajdhani', sans-serif;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #04040f; }
+::-webkit-scrollbar-thumb { background: var(--accent-blue); border-radius: 3px; }
+
+/* ── Main content padding ── */
+.block-container {
+  padding-top: 1rem !important;
+  padding-bottom: 2rem !important;
+  max-width: 1200px !important;
+}
+
+/* ── Typography ── */
+h1, h2, h3, h4 {
+  font-family: 'Orbitron', monospace !important;
+  color: var(--accent-blue) !important;
+  letter-spacing: 2px;
+}
+
+/* ── Glowing card ── */
+.cyber-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-glow);
+  border-radius: 12px;
+  padding: 24px;
+  margin: 12px 0;
+  box-shadow: var(--shadow-glow), inset 0 1px 0 rgba(255,255,255,0.05);
+  backdrop-filter: blur(10px);
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.cyber-card:hover {
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 30px rgba(0, 255, 234, 0.3);
+}
+
+/* ── Hero section ── */
+.hero-container {
+  text-align: center;
+  padding: 60px 20px 40px;
+  background: radial-gradient(ellipse at center, rgba(0,212,255,0.08) 0%, transparent 70%);
+  border-bottom: 1px solid var(--border-glow);
+}
+
+.hero-title {
+  font-family: 'Orbitron', monospace;
+  font-size: clamp(2.5rem, 6vw, 5rem);
+  font-weight: 900;
+  letter-spacing: 0.15em;
+  background: linear-gradient(135deg, #00d4ff 0%, #7b2fff 50%, #ff2d9b 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: none;
+  margin: 0;
+  line-height: 1.1;
+  animation: glowPulse 3s ease-in-out infinite alternate;
+}
+
+.hero-subtitle {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: clamp(0.9rem, 2vw, 1.3rem);
+  color: var(--accent-cyan);
+  letter-spacing: 0.3em;
+  margin: 10px 0 20px;
+  opacity: 0.9;
+}
+
+.hero-tagline {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: clamp(1rem, 2.5vw, 1.5rem);
+  color: var(--text-secondary);
+  letter-spacing: 0.1em;
+}
+
+@keyframes glowPulse {
+  0% { filter: drop-shadow(0 0 10px rgba(0,212,255,0.5)); }
+  100% { filter: drop-shadow(0 0 25px rgba(123,47,255,0.7)); }
+}
+
+/* ── Buttons ── */
+.stButton > button {
+  font-family: 'Orbitron', monospace !important;
+  font-weight: 700 !important;
+  letter-spacing: 2px !important;
+  font-size: 0.85rem !important;
+  border-radius: 6px !important;
+  transition: all 0.25s ease !important;
+  text-transform: uppercase !important;
+}
+
+.stButton > button[kind="primary"] {
+  background: linear-gradient(135deg, #00d4ff, #7b2fff) !important;
+  border: none !important;
+  color: #fff !important;
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.4) !important;
+}
+
+.stButton > button[kind="primary"]:hover {
+  box-shadow: 0 0 35px rgba(0, 212, 255, 0.7) !important;
+  transform: translateY(-2px) !important;
+}
+
+.stButton > button[kind="secondary"] {
+  background: transparent !important;
+  border: 1px solid var(--accent-blue) !important;
+  color: var(--accent-blue) !important;
+}
+
+.stButton > button[kind="secondary"]:hover {
+  background: rgba(0, 212, 255, 0.1) !important;
+  box-shadow: 0 0 15px rgba(0, 212, 255, 0.3) !important;
+}
+
+/* ── Inputs ── */
+.stTextInput > div > div > input,
+.stNumberInput > div > div > input,
+.stSelectbox > div > div {
+  background: rgba(10, 20, 40, 0.9) !important;
+  border: 1px solid rgba(0, 212, 255, 0.3) !important;
+  color: var(--text-primary) !important;
+  border-radius: 6px !important;
+  font-family: 'Share Tech Mono', monospace !important;
+}
+
+.stTextInput > div > div > input:focus {
+  border-color: var(--accent-cyan) !important;
+  box-shadow: 0 0 10px rgba(0, 255, 234, 0.3) !important;
+}
+
+/* ── Progress bars ── */
+.stProgress > div > div > div > div {
+  background: linear-gradient(90deg, var(--accent-blue), var(--accent-violet)) !important;
+}
+
+/* ── Success / Error / Warning ── */
+.stSuccess { background: rgba(0, 255, 136, 0.1) !important; border-left: 3px solid var(--accent-green) !important; }
+.stError { background: rgba(255, 45, 155, 0.1) !important; border-left: 3px solid var(--accent-pink) !important; }
+.stWarning { background: rgba(255, 165, 0, 0.1) !important; border-left: 3px solid orange !important; }
+.stInfo { background: rgba(0, 212, 255, 0.1) !important; border-left: 3px solid var(--accent-blue) !important; }
+
+/* ── Timer ── */
+.timer-display {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 2.5rem;
+  color: var(--accent-cyan);
+  text-align: center;
+  letter-spacing: 0.2em;
+  padding: 10px;
+  border: 1px solid var(--border-glow);
+  border-radius: 8px;
+  background: rgba(0, 20, 40, 0.8);
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.2);
+}
+
+.timer-warning { color: orange !important; }
+.timer-critical { color: var(--accent-pink) !important; animation: blink 1s infinite; }
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* ── Round cards ── */
+.round-card {
+  background: linear-gradient(135deg, rgba(10,20,40,0.9), rgba(5,10,30,0.9));
+  border: 1px solid rgba(0, 212, 255, 0.25);
+  border-radius: 10px;
+  padding: 18px;
+  margin: 8px 0;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.round-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 3px; height: 100%;
+  background: linear-gradient(180deg, var(--accent-blue), var(--accent-violet));
+}
+
+.round-card.locked { opacity: 0.45; cursor: not-allowed; }
+.round-card.completed { border-color: var(--accent-green); }
+.round-card.completed::before { background: var(--accent-green); }
+.round-card.active { border-color: var(--accent-cyan); box-shadow: 0 0 20px rgba(0,255,234,0.2); }
+
+/* ── Question card ── */
+.question-card {
+  background: rgba(5, 15, 30, 0.9);
+  border: 1px solid rgba(0, 212, 255, 0.2);
+  border-radius: 10px;
+  padding: 22px;
+  margin: 15px 0;
+}
+
+.question-card.solved { border-color: var(--accent-green); background: rgba(0, 255, 136, 0.04); }
+.question-card.failed { border-color: var(--accent-pink); }
+
+/* ── Score badge ── */
+.score-badge {
+  display: inline-block;
+  font-family: 'Orbitron', monospace;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--accent-cyan);
+  background: rgba(0, 212, 255, 0.1);
+  border: 1px solid var(--accent-blue);
+  border-radius: 8px;
+  padding: 8px 20px;
+  letter-spacing: 2px;
+}
+
+/* ── Leaderboard ── */
+.leaderboard-row {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  margin: 4px 0;
+  border-radius: 8px;
+  background: rgba(10, 20, 40, 0.7);
+  border-left: 3px solid transparent;
+  transition: all 0.2s;
+}
+
+.leaderboard-row.rank-1 { border-left-color: gold; background: rgba(255,215,0,0.06); }
+.leaderboard-row.rank-2 { border-left-color: silver; }
+.leaderboard-row.rank-3 { border-left-color: #cd7f32; }
+.leaderboard-row.my-team { border: 1px solid var(--accent-cyan); background: rgba(0,212,255,0.08); }
+
+/* ── Faculty / Member cards ── */
+.profile-card {
+  background: var(--bg-card);
+  border: 1px solid rgba(0, 212, 255, 0.25);
+  border-radius: 12px;
+  padding: 24px;
+  text-align: center;
+  transition: all 0.3s;
+}
+
+.profile-card:hover {
+  border-color: var(--accent-violet);
+  box-shadow: 0 0 25px rgba(123,47,255,0.25);
+  transform: translateY(-4px);
+}
+
+.profile-avatar {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-violet));
+  margin: 0 auto 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.2rem;
+  box-shadow: 0 0 20px rgba(0,212,255,0.3);
+}
+
+/* ── Treasure Vault ── */
+.vault-container {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.vault-icon {
+  font-size: 5rem;
+  margin-bottom: 20px;
+  animation: vaultGlow 2s ease-in-out infinite alternate;
+}
+
+@keyframes vaultGlow {
+  0% { filter: drop-shadow(0 0 10px gold); }
+  100% { filter: drop-shadow(0 0 30px orange); }
+}
+
+.treasure-code {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 1.8rem;
+  letter-spacing: 0.4em;
+  color: gold;
+  background: rgba(255,215,0,0.08);
+  border: 2px solid gold;
+  border-radius: 10px;
+  padding: 14px 28px;
+  display: inline-block;
+  margin: 15px 0;
+  box-shadow: 0 0 25px rgba(255,215,0,0.3);
+}
+
+/* ── Divider ── */
+.cyber-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent-blue), transparent);
+  margin: 30px 0;
+}
+
+/* ── Difficulty badges ── */
+.diff-easy { color: var(--accent-green); font-size: 0.75rem; letter-spacing: 1px; font-family: 'Share Tech Mono', monospace; }
+.diff-medium { color: orange; font-size: 0.75rem; letter-spacing: 1px; font-family: 'Share Tech Mono', monospace; }
+.diff-hard { color: var(--accent-pink); font-size: 0.75rem; letter-spacing: 1px; font-family: 'Share Tech Mono', monospace; }
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .hero-title { font-size: 2rem; }
+  .block-container { padding-left: 1rem !important; padding-right: 1rem !important; }
+  .profile-card { padding: 16px; }
+}
+
+/* ── Fragments strip ── */
+.fragments-strip {
+  display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
+  padding: 12px;
+}
+
+.fragment-pill {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.75rem;
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid var(--accent-violet);
+  color: var(--accent-violet);
+  background: rgba(123,47,255,0.1);
+}
+
+.fragment-pill.earned {
+  border-color: var(--accent-green);
+  color: var(--accent-green);
+  background: rgba(0,255,136,0.08);
+}
+
+/* ── Nav tabs ── */
+.stTabs [data-baseweb="tab-list"] {
+  gap: 8px;
+  background: transparent !important;
+}
+
+.stTabs [data-baseweb="tab"] {
+  font-family: 'Orbitron', monospace !important;
+  font-size: 0.75rem !important;
+  letter-spacing: 1px !important;
+  background: rgba(10,20,40,0.6) !important;
+  border: 1px solid rgba(0,212,255,0.2) !important;
+  border-radius: 6px !important;
+  color: var(--text-secondary) !important;
+}
+
+.stTabs [aria-selected="true"] {
+  background: rgba(0,212,255,0.15) !important;
+  border-color: var(--accent-blue) !important;
+  color: var(--accent-blue) !important;
+}
+
+/* ── Sidebar ── */
+[data-testid="stSidebar"] {
+  background: rgba(4,4,15,0.95) !important;
+  border-right: 1px solid rgba(0,212,255,0.2) !important;
+}
+
+/* ── Expander ── */
+.streamlit-expanderHeader {
+  font-family: 'Orbitron', monospace !important;
+  font-size: 0.85rem !important;
+  color: var(--accent-blue) !important;
+  background: rgba(10,20,40,0.6) !important;
+  border-radius: 6px !important;
+}
+
+/* ── DataFrames ── */
+.stDataFrame { border: 1px solid rgba(0,212,255,0.2) !important; border-radius: 8px !important; }
+
+/* ── Code blocks ── */
+.stCodeBlock { border: 1px solid rgba(0,212,255,0.2) !important; }
+code { font-family: 'Share Tech Mono', monospace !important; color: var(--accent-cyan) !important; }
+
+/* ── Button container alignment ── */
+div[data-testid="stVerticalBlock"] > div:has(div.stButton) {
+  display: flex;
+  align-items: center;
+}
+
