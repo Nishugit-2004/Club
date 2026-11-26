@@ -689,11 +689,16 @@ def upsert_leaderboard(team_code: str, team_name: str, session: dict) -> bool:
 
 
 def get_leaderboard(limit: int = 50) -> list[dict]:
-    """Get leaderboard ordered by score desc, time asc, hints asc."""
+    """
+    Get leaderboard ordered by: score DESC, completion_time ASC, hints ASC.
+    Ties on all three criteria share the same rank (dense ranking).
+    """
     try:
         with get_db() as conn:
             rows = conn.execute(
-                """SELECT team_code, team_name, final_score, correct_answers, rounds_completed, hints_used, completion_time_seconds, status, finished_at
+                """SELECT team_code, team_name, final_score, correct_answers,
+                          rounds_completed, hints_used, completion_time_seconds,
+                          status, finished_at
                    FROM leaderboard_results
                    ORDER BY final_score DESC,
                             COALESCE(completion_time_seconds, 999999) ASC,
@@ -703,11 +708,97 @@ def get_leaderboard(limit: int = 50) -> list[dict]:
             ).fetchall()
 
             res = [dict(r) for r in rows]
-            for i, r in enumerate(res):
-                r["rank"] = i + 1
+            # Dense ranking: tied entries share a rank
+            prev_key = None
+            current_rank = 0
+            position = 0
+            for r in res:
+                position += 1
+                key = (
+                    r["final_score"],
+                    r["completion_time_seconds"] or 999999,
+                    r["hints_used"],
+                )
+                if key != prev_key:
+                    current_rank = position
+                    prev_key = key
+                r["rank"] = current_rank
             return res
     except Exception:
         return []
+
+
+def sync_all_active_sessions_to_leaderboard() -> int:
+    """
+    Sync every team that has an active game session into the leaderboard_results
+    table so their current in-progress scores appear on the live leaderboard.
+    Returns the number of teams synced.
+    """
+    synced = 0
+    try:
+        with get_db() as conn:
+            # Fetch all sessions joined with team names
+            sessions = conn.execute(
+                """SELECT gs.team_code, gs.total_score, gs.correct_answers,
+                          gs.hints_used, gs.status, gs.started_at, gs.completed_at,
+                          t.team_name
+                   FROM game_sessions gs
+                   JOIN teams t ON t.team_code = gs.team_code"""
+            ).fetchall()
+
+            now_iso = datetime.now(timezone.utc).isoformat()
+
+            for s in sessions:
+                team_code = s["team_code"]
+                team_name = s["team_name"]
+                score = s["total_score"] or 0
+                correct = s["correct_answers"] or 0
+                hints = s["hints_used"] or 0
+                status = s["status"] or "active"
+                completed_at = s["completed_at"]
+                started_at = s["started_at"]
+
+                # Count completed rounds for this team
+                rds_row = conn.execute(
+                    "SELECT COUNT(*) FROM completed_rounds WHERE team_code = ?",
+                    (team_code,),
+                ).fetchone()
+                rounds_done = rds_row[0] if rds_row else 0
+
+                # Completion time
+                completion_time = None
+                if completed_at and started_at:
+                    try:
+                        start = datetime.fromisoformat(started_at.replace("Z", "+00:00"))
+                        end = datetime.fromisoformat(completed_at.replace("Z", "+00:00"))
+                        completion_time = int((end - start).total_seconds())
+                    except Exception:
+                        pass
+
+                conn.execute(
+                    """INSERT INTO leaderboard_results
+                       (team_code, team_name, final_score, correct_answers,
+                        rounds_completed, hints_used, completion_time_seconds,
+                        status, finished_at)
+                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                       ON CONFLICT(team_code) DO UPDATE SET
+                           team_name = excluded.team_name,
+                           final_score = excluded.final_score,
+                           correct_answers = excluded.correct_answers,
+                           rounds_completed = excluded.rounds_completed,
+                           hints_used = excluded.hints_used,
+                           completion_time_seconds = excluded.completion_time_seconds,
+                           status = excluded.status,
+                           finished_at = excluded.finished_at""",
+                    (
+                        team_code, team_name, score, correct,
+                        rounds_done, hints, completion_time, status, completed_at,
+                    ),
+                )
+                synced += 1
+    except Exception:
+        pass
+    return synced
 
 
 def get_team_rank(team_code: str) -> Optional[int]:

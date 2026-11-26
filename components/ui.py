@@ -461,106 +461,107 @@ def render_leaderboard(
     rows: list[dict],
     my_team_name: str = "",
 ) -> None:
-    """Render the leaderboard table."""
+    """Render the leaderboard table with proper HTML rendering."""
 
     if not rows:
-        st.info("No teams on the leaderboard yet.")
-        return
-
-    medals = {
-        1: "🥇",
-        2: "🥈",
-        3: "🥉",
-    }
-
-    for row in rows[:20]:
-
-        rank = row.get("rank", "—")
-
-        is_mine = (
-            row.get("team_name", "").lower()
-            == my_team_name.lower()
-            if my_team_name
-            else False
-        )
-
-        medal = medals.get(rank, f"#{rank}")
-
-        status = row.get("status", "active")
-
-        status_badge = (
-            "✅"
-            if status == "completed"
-            else "⌛"
-            if status == "expired"
-            else "⚡"
-        )
-
-        time_str = "—"
-
-        if row.get("completion_time_seconds"):
-
-            m, s = divmod(
-                row["completion_time_seconds"],
-                60,
-            )
-
-            time_str = f"{m}m {s}s"
-
-        row_class = f"rank-{rank}" if rank <= 3 else ""
-
-        if is_mine:
-            row_class += " my-team"
-
-        team_name = html.escape(str(row.get("team_name", "")))
-
-        score = row.get("final_score", 0)
-
-        score_color = "#00ffea" if is_mine else "#e0e0ff"
-
-        html_content = textwrap.dedent(f"""
-        <div class="leaderboard-row {row_class}">
-
-            <div style="width:50px;
-                        font-family:'Orbitron',monospace;
-                        font-weight:700;
-                        color:#00d4ff;">
-                {medal}
-            </div>
-
-            <div style="flex:1;
-                        font-weight:600;
-                        color:{score_color};">
-                {team_name} {'← You' if is_mine else ''}
-            </div>
-
-            <div style="width:80px;
-                        text-align:right;
-                        font-family:'Share Tech Mono',monospace;
-                        color:#00d4ff;">
-                {score}pts
-            </div>
-
-            <div style="width:80px;
-                        text-align:right;
-                        font-family:'Share Tech Mono',monospace;
-                        color:#8899bb;
-                        font-size:0.8rem;">
-                {time_str}
-            </div>
-
-            <div style="width:30px;
-                        text-align:right;">
-                {status_badge}
-            </div>
-
-        </div>
-        """).strip()
-
         st.markdown(
-            html_content,
+            '<div class="cyber-card" style="text-align:center;padding:40px;">'
+            '<div style="font-size:3rem;margin-bottom:10px;">📊</div>'
+            '<div style="font-family:\"Orbitron\",monospace;color:#8899bb;">No teams on the leaderboard yet.</div>'
+            '<div style="color:#445;font-size:0.85rem;margin-top:8px;">Be the first to register and play!</div>'
+            '</div>',
             unsafe_allow_html=True,
         )
+        return
+
+    medals = {1: "🥇", 2: "🥈", 3: "🥉"}
+
+    # ── Top-3 Podium highlight ────────────────────────────────────────────────
+    top3 = [r for r in rows if isinstance(r.get("rank"), int) and r["rank"] <= 3]
+    if top3:
+        podium_colors = {1: ("gold", "rgba(255,215,0,0.12)"), 2: ("silver", "rgba(192,192,192,0.08)"), 3: ("#cd7f32", "rgba(205,127,50,0.08)")}
+        podium_html = '<div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;">'
+        for r in sorted(top3, key=lambda x: x["rank"]):
+            rk = r["rank"]
+            bc, bg = podium_colors.get(rk, ("#00d4ff", "rgba(0,212,255,0.08)"))
+            tn = html.escape(str(r.get("team_name", "")))
+            sc = r.get("final_score", 0)
+            rds = r.get("rounds_completed", 0)
+            md = medals.get(rk, f"#{rk}")
+            ct = r.get("completion_time_seconds")
+            ts = f"{ct // 60}m {ct % 60}s" if ct else "—"
+            podium_html += (
+                f'<div style="flex:1;min-width:140px;background:{bg};border:1.5px solid {bc};'
+                f'border-radius:12px;padding:16px 12px;text-align:center;">'
+                f'<div style="font-size:1.8rem;margin-bottom:4px;">{md}</div>'
+                f'<div style="font-family:\'Orbitron\',monospace;font-size:0.78rem;color:{bc};'
+                f'font-weight:700;margin-bottom:4px;word-break:break-word;">{tn}</div>'
+                f'<div style="font-family:\'Share Tech Mono\',monospace;font-size:1rem;color:#00ffea;font-weight:700;">{sc}pts</div>'
+                f'<div style="font-family:\'Share Tech Mono\',monospace;font-size:0.68rem;color:#8899bb;margin-top:4px;">{rds} rounds · {ts}</div>'
+                f'</div>'
+            )
+        podium_html += '</div>'
+        st.markdown(podium_html, unsafe_allow_html=True)
+
+    # ── Full table ────────────────────────────────────────────────────────────
+    for row in rows[:50]:
+        rank = row.get("rank")
+        try:
+            rank_int = int(rank)
+        except (TypeError, ValueError):
+            rank_int = 999
+
+        is_mine = bool(
+            my_team_name
+            and row.get("team_name", "").lower() == my_team_name.lower()
+        )
+
+        medal = medals.get(rank_int, f"#{rank_int}")
+        status = row.get("status", "active")
+        status_badge = "✅" if status == "completed" else "⌛" if status == "expired" else "⚡"
+
+        ct = row.get("completion_time_seconds")
+        time_str = f"{ct // 60}m {ct % 60}s" if ct else "—"
+
+        rds = row.get("rounds_completed", 0)
+        team_name = html.escape(str(row.get("team_name", "")))
+        score = row.get("final_score", 0)
+        you_label = " ← You" if is_mine else ""
+
+        # Border colour by rank
+        if rank_int == 1:
+            border = "gold"
+        elif rank_int == 2:
+            border = "silver"
+        elif rank_int == 3:
+            border = "#cd7f32"
+        elif is_mine:
+            border = "#00ffea"
+        else:
+            border = "transparent"
+
+        bg = "rgba(0,212,255,0.06)" if is_mine else "rgba(10,20,40,0.7)"
+        name_color = "#00ffea" if is_mine else "#e0e0ff"
+        medal_color = "gold" if rank_int == 1 else "silver" if rank_int == 2 else "#cd7f32" if rank_int == 3 else "#00d4ff"
+
+        row_html = (
+            f'<div style="display:flex;align-items:center;padding:11px 16px;margin:4px 0;'
+            f'border-radius:8px;background:{bg};border-left:3px solid {border};'
+            f'border:1px solid {border};transition:all 0.2s;">'
+            f'<div style="width:54px;font-family:\'Orbitron\',monospace;font-weight:700;color:{medal_color};font-size:1rem;">'
+            f'{medal}</div>'
+            f'<div style="flex:1;font-weight:600;color:{name_color};font-size:0.92rem;word-break:break-word;">'
+            f'{team_name}{you_label}</div>'
+            f'<div style="width:60px;text-align:center;font-family:\'Share Tech Mono\',monospace;'
+            f'font-size:0.75rem;color:#8899bb;">{rds}rds</div>'
+            f'<div style="width:80px;text-align:right;font-family:\'Share Tech Mono\',monospace;'
+            f'color:#00d4ff;font-weight:700;">{score}pts</div>'
+            f'<div style="width:76px;text-align:right;font-family:\'Share Tech Mono\',monospace;'
+            f'color:#8899bb;font-size:0.78rem;">{time_str}</div>'
+            f'<div style="width:34px;text-align:right;font-size:1rem;">{status_badge}</div>'
+            f'</div>'
+        )
+        st.markdown(row_html, unsafe_allow_html=True)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════

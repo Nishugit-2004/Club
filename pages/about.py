@@ -9,38 +9,101 @@ from components.ui import cyber_header
 from database import db
 
 
-def _get_image_html(photo_path: str, fallback_emoji: str, size: int = 80) -> str:
-    """Generate HTML for either the uploaded/linked image or the emoji avatar."""
-    if photo_path:
-        full_path = photo_path if os.path.isabs(photo_path) else os.path.join(db.BASE_DIR, photo_path)
-        if os.path.exists(full_path):
-            try:
-                with open(full_path, "rb") as f:
-                    encoded = base64.b64encode(f.read()).decode("utf-8")
-                ext = os.path.splitext(full_path)[1].lower().replace(".", "")
-                mime = "image/jpeg" if ext in ("jpg", "jpeg") else ("image/png" if ext == "png" else f"image/{ext}")
-                return f"""
-                <div style="width:{size}px; height:{size}px; border-radius:50%; margin:0 auto 12px;
-                            border: 2px solid #00d4ff; box-shadow:0 0 15px rgba(0,212,255,0.4); overflow:hidden;">
-                    <img src="data:{mime};base64,{encoded}" style="width:100%; height:100%; object-fit:cover; display:block;" />
-                </div>
-                """
-            except Exception:
-                pass
+# ── Resolve & encode image ───────────────────────────────────────────────────
 
-    return f"""
-    <div class="profile-avatar" style="width:{size}px; height:{size}px; font-size:{size // 2.5}px;">
-        {fallback_emoji}
-    </div>
+def _encode_image(photo_path: str) -> tuple[str, str] | None:
     """
+    Resolve photo_path (relative or absolute) → (base64_data, mime_type).
+    Returns None if the file cannot be found or read.
+    """
+    if not photo_path:
+        return None
 
+    full_path = (
+        photo_path
+        if os.path.isabs(photo_path)
+        else os.path.join(db.BASE_DIR, photo_path)
+    )
+
+    if not os.path.exists(full_path):
+        return None
+
+    try:
+        with open(full_path, "rb") as f:
+            data = base64.b64encode(f.read()).decode("utf-8")
+        ext = os.path.splitext(full_path)[1].lower().lstrip(".")
+        mime_map = {"jpg": "image/jpeg", "jpeg": "image/jpeg",
+                    "png": "image/png", "gif": "image/gif",
+                    "webp": "image/webp"}
+        mime = mime_map.get(ext, f"image/{ext}")
+        return data, mime
+    except Exception:
+        return None
+
+
+# ── Reusable card HTML builders ──────────────────────────────────────────────
+
+def _photo_circle_html(photo_path: str, fallback_emoji: str, size: int = 90) -> str:
+    """Return HTML for a circular photo (real image or emoji fallback)."""
+    encoded = _encode_image(photo_path)
+    if encoded:
+        b64, mime = encoded
+        return (
+            f'<div style="width:{size}px;height:{size}px;border-radius:50%;'
+            f'margin:0 auto 14px;border:2.5px solid #00d4ff;'
+            f'box-shadow:0 0 18px rgba(0,212,255,0.45);overflow:hidden;flex-shrink:0;">'
+            f'<img src="data:{mime};base64,{b64}" '
+            f'style="width:100%;height:100%;object-fit:cover;display:block;" />'
+            f'</div>'
+        )
+    # Clean placeholder with gradient background + emoji
+    fs = max(size // 3, 18)
+    return (
+        f'<div style="width:{size}px;height:{size}px;border-radius:50%;'
+        f'margin:0 auto 14px;border:2.5px solid rgba(0,212,255,0.4);'
+        f'box-shadow:0 0 18px rgba(0,212,255,0.25);overflow:hidden;flex-shrink:0;'
+        f'background:linear-gradient(135deg,#0d2060 0%,#1a0a4a 100%);'
+        f'display:flex;align-items:center;justify-content:center;font-size:{fs}px;">'
+        f'{fallback_emoji}'
+        f'</div>'
+    )
+
+
+def _photo_rect_html(photo_path: str, fallback_emoji: str, width: str = "100%", height: int = 180) -> str:
+    """Return HTML for a rectangular photo (real image or emoji placeholder)."""
+    encoded = _encode_image(photo_path)
+    if encoded:
+        b64, mime = encoded
+        return (
+            f'<div style="width:{width};height:{height}px;border-radius:12px 12px 0 0;'
+            f'overflow:hidden;margin:-1px -1px 0 -1px;">'
+            f'<img src="data:{mime};base64,{b64}" '
+            f'style="width:100%;height:100%;object-fit:cover;display:block;" />'
+            f'</div>'
+        )
+    # Placeholder block
+    return (
+        f'<div style="width:{width};height:{height}px;border-radius:12px 12px 0 0;'
+        f'background:linear-gradient(135deg,#0b1a3a 0%,#140830 100%);'
+        f'display:flex;align-items:center;justify-content:center;'
+        f'border-bottom:1px solid rgba(0,212,255,0.15);">'
+        f'<div style="text-align:center;">'
+        f'<div style="font-size:52px;margin-bottom:6px;">{fallback_emoji}</div>'
+        f'<div style="font-family:\'Share Tech Mono\',monospace;font-size:0.65rem;'
+        f'color:rgba(0,212,255,0.4);letter-spacing:2px;">NO PHOTO</div>'
+        f'</div>'
+        f'</div>'
+    )
+
+
+# ── Main render ──────────────────────────────────────────────────────────────
 
 def render():
     # ── Department intro ─────────────────────────────────────────────────────
     st.markdown("""
     <div class="hero-container" style="padding:40px 20px 30px;">
         <div class="hero-title" style="font-size:2.5rem;">DEPARTMENT OF CSE</div>
-        <div class="hero-subtitle">◈ COMPUTER SCIENCE & ENGINEERING ◈</div>
+        <div class="hero-subtitle">◈ COMPUTER SCIENCE &amp; ENGINEERING ◈</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -92,61 +155,120 @@ def render():
             </div>
             """, unsafe_allow_html=True)
 
-    # ── 1. Faculty Profiles (Department of CSE) ────────────────────────────────
+    # ════════════════════════════════════════════════════════════════════════
+    # 1. FACULTY COORDINATORS
+    # ════════════════════════════════════════════════════════════════════════
     st.markdown("<div style='height:20px'></div>", unsafe_allow_html=True)
     cyber_header("FACULTY COORDINATORS", "Department of Computer Science & Engineering")
 
     faculty_list = db.get_faculty_profiles()
     faculty_emojis = ["👨‍🏫", "👩‍🏫", "👨‍💻"]
 
-    if faculty_list:
-        fac_cols = st.columns(min(len(faculty_list), 3))
+    if not faculty_list:
+        st.info("No faculty profiles found.")
+    else:
+        n_fac = min(len(faculty_list), 3)
+        fac_cols = st.columns(n_fac)
         for i, f in enumerate(faculty_list):
+            emoji = faculty_emojis[i % len(faculty_emojis)]
+            photo_html = _photo_rect_html(f.get("photo_path", ""), emoji, height=200)
+
+            name       = f.get("name", "Faculty Member")
+            desig      = f.get("designation", "")
+            desc       = f.get("description", "")
+            expertise  = f.get("expertise", "")
+
             with fac_cols[i % 3]:
-                emoji = faculty_emojis[i % len(faculty_emojis)]
-                img_html = _get_image_html(f.get("photo_path", ""), emoji, size=90)
                 st.markdown(f"""
-                <div class="profile-card" style="min-height:360px;">
-                    {img_html}
-                    <div style="font-family:'Orbitron',monospace; font-size:1rem; color:#00ffea; font-weight:700; margin-bottom:4px;">{f['name']}</div>
-                    <div style="font-family:'Share Tech Mono',monospace; font-size:0.8rem; color:#7b2fff; letter-spacing:1px; margin-bottom:12px;">{f['designation']}</div>
-                    <div style="color:#8899bb; font-size:0.85rem; line-height:1.6; margin-bottom:12px;">{f.get('description','')}</div>
-                    <div style="font-family:'Share Tech Mono',monospace; font-size:0.72rem; color:#00d4ff; opacity:0.85;">{f.get('expertise','')}</div>
+                <div class="profile-card" style="padding:0; overflow:hidden; min-height:420px;">
+                    {photo_html}
+                    <div style="padding:18px 16px 20px;">
+                        <div style="font-family:'Orbitron',monospace; font-size:0.95rem;
+                                    color:#00ffea; font-weight:700; margin-bottom:4px;
+                                    word-break:break-word; line-height:1.3;">
+                            {name}
+                        </div>
+                        <div style="font-family:'Share Tech Mono',monospace; font-size:0.78rem;
+                                    color:#7b2fff; letter-spacing:1px; margin-bottom:12px;">
+                            {desig}
+                        </div>
+                        <div style="color:#8899bb; font-size:0.84rem; line-height:1.65;
+                                    margin-bottom:12px;">
+                            {desc}
+                        </div>
+                        <div style="font-family:'Share Tech Mono',monospace; font-size:0.70rem;
+                                    color:#00d4ff; opacity:0.85; word-break:break-word;">
+                            {expertise}
+                        </div>
+                    </div>
                 </div>
                 """, unsafe_allow_html=True)
 
-    # ── 2. Student Team Members (CSE Coding Club Coordinators) ─────────────────
+    # ════════════════════════════════════════════════════════════════════════
+    # 2. STUDENT COORDINATORS
+    # ════════════════════════════════════════════════════════════════════════
     st.markdown("<div style='height:20px'></div>", unsafe_allow_html=True)
     cyber_header("STUDENT COORDINATORS", "CSE Coding Club Leadership Team")
 
     members = db.get_club_members()
     member_emojis = ["👑", "⚡", "🤝", "📱", "💰", "📝", "👥", "🎯", "📜"]
 
-    if members:
-        # Display 3x3 responsive grid for all 9 coordinators
+    if not members:
+        st.info("No student coordinator profiles found.")
+    else:
         mem_cols = st.columns(3)
         for i, m in enumerate(members):
-            with mem_cols[i % 3]:
-                emoji = member_emojis[i % len(member_emojis)]
-                img_html = _get_image_html(m.get("photo_path", ""), emoji, size=75)
-                order_num = m.get("display_order") or (i + 1)
-                usn_display = m.get("usn", "")
+            emoji      = member_emojis[i % len(member_emojis)]
+            order_num  = m.get("display_order") or (i + 1)
+            name       = m.get("name", "")
+            role       = m.get("role", "")
+            usn        = m.get("usn", "")
+            bio        = m.get("bio", "")
+            photo_path = m.get("photo_path", "")
 
+            # Build circular photo (75 px) — centred in the card
+            photo_html = _photo_circle_html(photo_path, emoji, size=80)
+
+            # USN badge (optional)
+            usn_html = ""
+            if usn:
+                usn_html = (
+                    f'<div style="display:inline-block;background:rgba(123,47,255,0.1);'
+                    f'border:1px solid rgba(123,47,255,0.3);border-radius:4px;'
+                    f'padding:2px 8px;font-family:\'Share Tech Mono\',monospace;'
+                    f'font-size:0.73rem;color:#e0e0ff;margin-bottom:8px;">'
+                    f'USN: {usn}</div>'
+                )
+
+            with mem_cols[i % 3]:
                 st.markdown(f"""
-                <div class="profile-card" style="padding:18px 14px; margin-bottom:16px; position:relative;">
-                    <div style="display:inline-block; position:absolute; top:12px; left:14px; background:rgba(0,212,255,0.12);
-                                border:1px solid rgba(0,212,255,0.4); border-radius:12px; padding:2px 8px;
-                                font-family:'Share Tech Mono',monospace; font-size:0.68rem; color:#00d4ff;">
+                <div class="profile-card" style="padding:18px 14px 18px; margin-bottom:16px; position:relative; min-height:300px;">
+                    <div style="display:inline-block; position:absolute; top:12px; left:14px;
+                                background:rgba(0,212,255,0.12); border:1px solid rgba(0,212,255,0.4);
+                                border-radius:12px; padding:2px 8px;
+                                font-family:'Share Tech Mono',monospace;
+                                font-size:0.68rem; color:#00d4ff;">
                         SL NO: {order_num}
                     </div>
-                    <div style="height:10px;"></div>
-                    {img_html}
-                    <div style="font-family:'Orbitron',monospace; font-size:0.92rem; color:#00ffea; font-weight:700; margin-bottom:4px;">{m['name']}</div>
-                    <div style="font-family:'Share Tech Mono',monospace; font-size:0.75rem; color:#7b2fff; font-weight:600; letter-spacing:1px; margin-bottom:6px;">{m['role']}</div>
-                    {f'''<div style="display:inline-block; background:rgba(123,47,255,0.1); border:1px solid rgba(123,47,255,0.3);
-                                border-radius:4px; padding:2px 8px; font-family:'Share Tech Mono',monospace;
-                                font-size:0.75rem; color:#e0e0ff; margin-bottom:8px;">USN: {usn_display}</div>''' if usn_display else ''}
-                    <div style="color:#8899bb; font-size:0.78rem; line-height:1.5;">{m.get('bio','')}</div>
+                    <div style="height:28px;"></div>
+                    <div style="text-align:center;">
+                        {photo_html}
+                        <div style="font-family:'Orbitron',monospace; font-size:0.88rem;
+                                    color:#00ffea; font-weight:700; margin-bottom:4px;
+                                    word-break:break-word; line-height:1.3;">
+                            {name}
+                        </div>
+                        <div style="font-family:'Share Tech Mono',monospace; font-size:0.73rem;
+                                    color:#7b2fff; font-weight:600; letter-spacing:1px;
+                                    margin-bottom:8px;">
+                            {role}
+                        </div>
+                        {usn_html}
+                        <div style="color:#8899bb; font-size:0.78rem; line-height:1.5;
+                                    text-align:left;">
+                            {bio}
+                        </div>
+                    </div>
                 </div>
                 """, unsafe_allow_html=True)
 
@@ -163,24 +285,29 @@ def render():
         to transform classroom knowledge into real-world skills.
         </p>
         <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:16px;">
-            <span style="background:rgba(0,212,255,0.1); border:1px solid rgba(0,212,255,0.3); border-radius:20px;
-                         padding:5px 14px; font-family:'Share Tech Mono',monospace; font-size:0.8rem; color:#00d4ff;">
+            <span style="background:rgba(0,212,255,0.1); border:1px solid rgba(0,212,255,0.3);
+                         border-radius:20px; padding:5px 14px;
+                         font-family:'Share Tech Mono',monospace; font-size:0.8rem; color:#00d4ff;">
                 🏆 Competitive Programming
             </span>
-            <span style="background:rgba(123,47,255,0.1); border:1px solid rgba(123,47,255,0.3); border-radius:20px;
-                         padding:5px 14px; font-family:'Share Tech Mono',monospace; font-size:0.8rem; color:#7b2fff;">
+            <span style="background:rgba(123,47,255,0.1); border:1px solid rgba(123,47,255,0.3);
+                         border-radius:20px; padding:5px 14px;
+                         font-family:'Share Tech Mono',monospace; font-size:0.8rem; color:#7b2fff;">
                 💡 Hackathons
             </span>
-            <span style="background:rgba(0,255,136,0.1); border:1px solid rgba(0,255,136,0.3); border-radius:20px;
-                         padding:5px 14px; font-family:'Share Tech Mono',monospace; font-size:0.8rem; color:#00ff88;">
+            <span style="background:rgba(0,255,136,0.1); border:1px solid rgba(0,255,136,0.3);
+                         border-radius:20px; padding:5px 14px;
+                         font-family:'Share Tech Mono',monospace; font-size:0.8rem; color:#00ff88;">
                 🔐 Treasure Hunts
             </span>
-            <span style="background:rgba(255,45,155,0.1); border:1px solid rgba(255,45,155,0.3); border-radius:20px;
-                         padding:5px 14px; font-family:'Share Tech Mono',monospace; font-size:0.8rem; color:#ff2d9b;">
+            <span style="background:rgba(255,45,155,0.1); border:1px solid rgba(255,45,155,0.3);
+                         border-radius:20px; padding:5px 14px;
+                         font-family:'Share Tech Mono',monospace; font-size:0.8rem; color:#ff2d9b;">
                 📚 Workshops
             </span>
-            <span style="background:rgba(0,212,255,0.1); border:1px solid rgba(0,212,255,0.3); border-radius:20px;
-                         padding:5px 14px; font-family:'Share Tech Mono',monospace; font-size:0.8rem; color:#00d4ff;">
+            <span style="background:rgba(0,212,255,0.1); border:1px solid rgba(0,212,255,0.3);
+                         border-radius:20px; padding:5px 14px;
+                         font-family:'Share Tech Mono',monospace; font-size:0.8rem; color:#00d4ff;">
                 🌐 Open Source Projects
             </span>
         </div>
