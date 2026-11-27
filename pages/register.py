@@ -2,7 +2,7 @@
 pages/register.py — Team registration and game entry page.
 """
 import streamlit as st
-from components.ui import cyber_header, team_code_display
+from components.ui import cyber_header
 from database.db import register_team, get_team, is_db_available
 
 
@@ -93,16 +93,10 @@ def render():
                         team_code = result["team_code"]
                         st.session_state.team_code = team_code
                         st.session_state.registered_team_code = team_code
-                        st.success("✅ Registration successful!")
-                        team_code_display(team_code)
-
-                        col_copy, col_hunt = st.columns(2)
-                        with col_copy:
-                            st.code(team_code, language=None)
-                        with col_hunt:
-                            if st.button("🎯 START THE HUNT", type="primary", use_container_width=True, key="start_hunt_btn"):
-                                st.session_state.page = "hunt"
-                                st.rerun()
+                        st.success("✅ Registration Successful!")
+                        if st.button("🎯 START THE HUNT", type="primary", use_container_width=True, key="start_hunt_btn"):
+                            st.session_state.page = "hunt"
+                            st.rerun()
                     else:
                         st.error(f"❌ {result['error']}")
 

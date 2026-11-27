@@ -43,17 +43,17 @@ def _encode_image(photo_path: str) -> tuple[str, str] | None:
 
 # ── Reusable card HTML builders ──────────────────────────────────────────────
 
-def _photo_circle_html(photo_path: str, fallback_emoji: str, size: int = 90) -> str:
+def _photo_circle_html(photo_path: str, fallback_emoji: str, size: int = 110) -> str:
     """Return HTML for a circular photo (real image or emoji fallback)."""
     encoded = _encode_image(photo_path)
     if encoded:
         b64, mime = encoded
         return (
             f'<div style="width:{size}px;height:{size}px;border-radius:50%;'
-            f'margin:0 auto 14px;border:2.5px solid #00d4ff;'
-            f'box-shadow:0 0 18px rgba(0,212,255,0.45);overflow:hidden;flex-shrink:0;">'
+            f'margin:0 auto 14px;border:3px solid #00d4ff;'
+            f'box-shadow:0 0 22px rgba(0,212,255,0.55);overflow:hidden;flex-shrink:0;">'
             f'<img src="data:{mime};base64,{b64}" '
-            f'style="width:100%;height:100%;object-fit:cover;display:block;" />'
+            f'style="width:100%;height:100%;object-fit:cover;object-position:center top;display:block;" />'
             f'</div>'
         )
     # Clean placeholder with gradient background + emoji
@@ -69,7 +69,7 @@ def _photo_circle_html(photo_path: str, fallback_emoji: str, size: int = 90) -> 
     )
 
 
-def _photo_rect_html(photo_path: str, fallback_emoji: str, width: str = "100%", height: int = 180) -> str:
+def _photo_rect_html(photo_path: str, fallback_emoji: str, width: str = "100%", height: int = 220) -> str:
     """Return HTML for a rectangular photo (real image or emoji placeholder)."""
     encoded = _encode_image(photo_path)
     if encoded:
@@ -78,7 +78,7 @@ def _photo_rect_html(photo_path: str, fallback_emoji: str, width: str = "100%", 
             f'<div style="width:{width};height:{height}px;border-radius:12px 12px 0 0;'
             f'overflow:hidden;margin:-1px -1px 0 -1px;">'
             f'<img src="data:{mime};base64,{b64}" '
-            f'style="width:100%;height:100%;object-fit:cover;display:block;" />'
+            f'style="width:100%;height:100%;object-fit:cover;object-position:center top;display:block;" />'
             f'</div>'
         )
     # Placeholder block
@@ -171,7 +171,7 @@ def render():
         fac_cols = st.columns(n_fac)
         for i, f in enumerate(faculty_list):
             emoji = faculty_emojis[i % len(faculty_emojis)]
-            photo_html = _photo_rect_html(f.get("photo_path", ""), emoji, height=200)
+            photo_html = _photo_rect_html(f.get("photo_path", ""), emoji, height=240)
 
             name       = f.get("name", "Faculty Member")
             desig      = f.get("designation", "")
@@ -227,7 +227,7 @@ def render():
             photo_path = m.get("photo_path", "")
 
             # Build circular photo (75 px) — centred in the card
-            photo_html = _photo_circle_html(photo_path, emoji, size=80)
+            photo_html = _photo_circle_html(photo_path, emoji, size=110)
 
             # USN badge (optional)
             usn_html = ""

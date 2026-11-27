@@ -50,18 +50,12 @@ def load_css() -> None:
 def hero_section() -> None:
     """Render the hero section on the home page."""
 
-    html_content = textwrap.dedent("""
-    <div class="hero-container">
-        <div class="hero-title">THE LOST ALGORITHM</div>
-        <div class="hero-subtitle">◈ CSE CODING CLUB TREASURE HUNT ◈</div>
-        <div class="hero-tagline">
-            Ten rounds. Thirty challenges. One hidden treasure.
-        </div>
-    </div>
-    """).strip()
-
     st.markdown(
-        html_content,
+        '<div class="hero-container">'
+        '<div class="hero-title">THE LOST ALGORITHM</div>'
+        '<div class="hero-subtitle">◈ CSE CODING CLUB TREASURE HUNT ◈</div>'
+        '<div class="hero-tagline">Ten rounds. Thirty challenges. One hidden treasure.</div>'
+        '</div>',
         unsafe_allow_html=True,
     )
 
@@ -77,25 +71,15 @@ def cyber_header(title: str, subtitle: str = "") -> None:
     safe_subtitle = html.escape(str(subtitle))
 
     sub_html = (
-        f'<p style="color:#8899bb; font-family:monospace; '
-        f'letter-spacing:1px; margin:0;">{safe_subtitle}</p>'
-        if subtitle
-        else ""
+        f'<p style="color:#8899bb;font-family:monospace;letter-spacing:1px;margin:0;">{safe_subtitle}</p>'
+        if subtitle else ""
     )
-
-    html_content = textwrap.dedent(f"""
-    <div style="margin:1.5rem 0 1rem;">
-        <h2 style="font-family:'Orbitron',monospace;
-                   color:#00d4ff; letter-spacing:3px; margin:0;">
-            {safe_title}
-        </h2>
-        {sub_html}
-        <div class="cyber-divider" style="margin-top:10px;"></div>
-    </div>
-    """).strip()
-
     st.markdown(
-        html_content,
+        f'<div style="margin:1.5rem 0 1rem;">'
+        f'<h2 style="font-family:\'Orbitron\',monospace;color:#00d4ff;letter-spacing:3px;margin:0;">{safe_title}</h2>'
+        f'{sub_html}'
+        f'<div class="cyber-divider" style="margin-top:10px;"></div>'
+        f'</div>',
         unsafe_allow_html=True,
     )
 
@@ -232,19 +216,11 @@ def render_faculty_cards(faculty_members: list[dict]) -> None:
 def score_display(score: int, max_score: int = 300) -> None:
     """Display the current score."""
 
-    html_content = textwrap.dedent(f"""
-    <div style="text-align:center; padding:10px;">
-        <div style="font-family:'Share Tech Mono',monospace;
-                    color:#8899bb; font-size:0.75rem;
-                    letter-spacing:2px;">
-            CURRENT SCORE
-        </div>
-        <div class="score-badge">{score} / {max_score}</div>
-    </div>
-    """).strip()
-
     st.markdown(
-        html_content,
+        f'<div style="text-align:center;padding:10px;">'
+        f'<div style="font-family:\'Share Tech Mono\',monospace;color:#8899bb;font-size:0.75rem;letter-spacing:2px;">CURRENT SCORE</div>'
+        f'<div class="score-badge">{score} / {max_score}</div>'
+        f'</div>',
         unsafe_allow_html=True,
     )
 
@@ -256,24 +232,11 @@ def score_display(score: int, max_score: int = 300) -> None:
 def db_unavailable_warning() -> None:
     """Show a warning if database access fails."""
 
-    html_content = textwrap.dedent("""
-    <div style="background:rgba(255,165,0,0.1);
-                border:2px solid orange;
-                border-radius:10px;
-                padding:20px;
-                margin:20px 0;">
-        <h3 style="color:orange; font-family:'Orbitron',monospace;">
-            ⚠ DATABASE INITIALIZATION ISSUE
-        </h3>
-        <p style="color:#e0e0ff;">
-            Could not write or read from local SQLite file
-            <code>treasure_hunt.db</code>.
-        </p>
-    </div>
-    """).strip()
-
     st.markdown(
-        html_content,
+        '<div style="background:rgba(255,165,0,0.1);border:2px solid orange;border-radius:10px;padding:20px;margin:20px 0;">'
+        '<h3 style="color:orange;font-family:\'Orbitron\',monospace;">⚠ DATABASE INITIALIZATION ISSUE</h3>'
+        '<p style="color:#e0e0ff;">Could not write or read from local SQLite file <code>treasure_hunt.db</code>.</p>'
+        '</div>',
         unsafe_allow_html=True,
     )
 
@@ -385,31 +348,12 @@ def render_round_grid(
                 else "#445"
             )
 
-            html_content = textwrap.dedent(f"""
-            <div class="round-card {state}"
-                 style="text-align:center; padding:12px 8px;">
-
-                <div style="font-size:1.2rem">{icon}</div>
-
-                <div style="font-family:'Orbitron',monospace;
-                            font-size:0.65rem;
-                            color:#8899bb;
-                            letter-spacing:1px;">
-                    ROUND
-                </div>
-
-                <div style="font-family:'Orbitron',monospace;
-                            font-size:1rem;
-                            color:{color};
-                            font-weight:700;">
-                    {round_num}
-                </div>
-
-            </div>
-            """).strip()
-
             st.markdown(
-                html_content,
+                f'<div class="round-card {state}" style="text-align:center;padding:12px 8px;">'
+                f'<div style="font-size:1.2rem">{icon}</div>'
+                f'<div style="font-family:\'Orbitron\',monospace;font-size:0.65rem;color:#8899bb;letter-spacing:1px;">ROUND</div>'
+                f'<div style="font-family:\'Orbitron\',monospace;font-size:1rem;color:{color};font-weight:700;">{round_num}</div>'
+                f'</div>',
                 unsafe_allow_html=True,
             )
 
@@ -570,44 +514,12 @@ def render_leaderboard(
 
 def team_code_display(team_code: str) -> None:
     """Display the team code in a prominent copyable style."""
-
-    safe_team_code = html.escape(str(team_code))
-
-    html_content = textwrap.dedent(f"""
-    <div style="text-align:center; padding:20px;">
-
-        <div style="font-family:'Orbitron',monospace;
-                    font-size:0.8rem;
-                    color:#8899bb;
-                    letter-spacing:3px;
-                    margin-bottom:8px;">
-            YOUR TEAM CODE
-        </div>
-
-        <div style="font-family:'Share Tech Mono',monospace;
-                    font-size:2rem;
-                    letter-spacing:0.3em;
-                    color:#00ffea;
-                    background:rgba(0,255,234,0.07);
-                    border:2px solid rgba(0,255,234,0.4);
-                    border-radius:10px;
-                    padding:14px 28px;
-                    display:inline-block;
-                    box-shadow:0 0 25px rgba(0,255,234,0.2);">
-            {safe_team_code}
-        </div>
-
-        <div style="color:#8899bb;
-                    font-size:0.8rem;
-                    margin-top:10px;
-                    font-family:monospace;">
-            Save this code — you'll need it to resume your game!
-        </div>
-
-    </div>
-    """).strip()
-
+    safe_code = html.escape(str(team_code))
     st.markdown(
-        html_content,
+        '<div style="text-align:center;padding:24px 10px;">'
+        '<div style="font-family:\'Orbitron\',monospace;font-size:0.8rem;color:#8899bb;letter-spacing:3px;margin-bottom:10px;">YOUR TEAM CODE</div>'
+        f'<div style="font-family:\'Share Tech Mono\',monospace;font-size:2rem;letter-spacing:0.3em;color:#00ffea;background:rgba(0,255,234,0.07);border:2px solid rgba(0,255,234,0.4);border-radius:10px;padding:14px 28px;display:inline-block;box-shadow:0 0 25px rgba(0,255,234,0.2);">{safe_code}</div>'
+        '<div style="color:#8899bb;font-size:0.8rem;margin-top:12px;font-family:monospace;">Save this code — you\'ll need it to resume your game!</div>'
+        '</div>',
         unsafe_allow_html=True,
     )
